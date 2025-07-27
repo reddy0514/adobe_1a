@@ -1,86 +1,77 @@
 import json
 import re
 from pathlib import Path
-import fitz  # PyMuPDF
+import fitz 
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
 import os
-
-
 class PDFProcessor:
     def __init__(self):
         self.title_cache = {}
         self.outline_cache = {}
-
     @staticmethod
     def clean_text(text):
-        text = re.sub(r'---+', '', text)  # Remove long dashes
-        text = re.sub(r'(\w)-\s+(\w)', r'\1\2', text)  # Merge hyphenated line breaks
-        text = re.sub(r'[\n\r\t]+', ' ', text)
-        text = re.sub(r'[ ]{2,}', ' ', text)
+        text=re.sub(r'---+','',text)  
+        text=re.sub(r'(\w)-\s+(\w)',r'\1\2',text) 
+        text=re.sub(r'[\n\r\t]+',' ',text)
+        text=re.sub(r'[ ]{2,}',' ',text)
         return text.strip()
 
     def extract_title(self, page):
-        cache_key = id(page)
+        cache_key=id(page)
         if cache_key in self.title_cache:
             return self.title_cache[cache_key]
-
         try:
-            blocks = page.get_text("dict").get("blocks", [])
+            blocks=page.get_text("dict").get("blocks", [])
         except Exception:
-            blocks = []
-
-        candidates = []
+            blocks=[]
+        candidates=[]
         for block in blocks:
-            for line in block.get("lines", []):
-                for span in line.get("spans", []):
-                    text = self.clean_text(span.get("text", ""))
+            for line in block.get("lines",[]):
+                for span in line.get("spans",[]):
+                    text = self.clean_text(span.get("text",""))
                     if len(text) < 5:
                         continue
-                    if re.match(r'^[-=\s]+$', text):  # Skip decoration
+                    if re.match(r'^[-=\s]+$',text): 
                         continue
-                    if re.match(r'^\d+$', text):  # Skip standalone numbers
+                    if re.match(r'^\d+$',text): 
                         continue
-
-                    size = span.get("size", 0)
-                    y_pos = span.get("origin", [0, 0])[1]
-                    weight = (size * 1.5) - (y_pos / page.rect.height)
-
+                    size=span.get("size", 0)
+                    y_pos=span.get("origin", [0, 0])[1]
+                    weight=(size * 1.5) - (y_pos / page.rect.height)
                     candidates.append((weight, size, text))
-
         if not candidates:
-            title = "Untitled Document"
+            title="Untitled Document"
         else:
             candidates.sort(reverse=True)
-            top_text = candidates[0][2]
-            title = top_text if len(top_text) >= 8 else "Untitled Document"
+            top_text=candidates[0][2]
+            title=top_text if len(top_text) >= 8 else "Untitled Document"
 
-        self.title_cache[cache_key] = title
+        self.title_cache[cache_key]=title
         return title
 
     def extract_page_outline(self, page_num, page):
-        outline_items = []
+        outline_items=[]
         try:
-            words_with_style = page.get_text("dict", flags=fitz.TEXT_PRESERVE_WHITESPACE).get("blocks", [])
-            raw_words = page.get_text("words", sort=True)
+            words_with_style=page.get_text("dict", flags=fitz.TEXT_PRESERVE_WHITESPACE).get("blocks", [])
+            raw_words=page.get_text("words", sort=True)
         except Exception:
             return []
 
-        span_size_map = {}
+        span_size_map={}
         for block in words_with_style:
             for line in block.get("lines", []):
                 for span in line.get("spans", []):
-                    text = self.clean_text(span.get('text', ''))
+                    text=self.clean_text(span.get('text', ''))
                     if text:
-                        span_size_map[text] = span.get('size', 0)
+                        span_size_map[text]=span.get('size', 0)
 
-        lines = {}
+        lines={}
         for word in raw_words:
-            y = round(word[3], 1)
+            y=round(word[3], 1)
             lines.setdefault(y, []).append(word[4])
 
         for y, words_in_line in sorted(lines.items()):
-            line_text = self.clean_text(' '.join(words_in_line))
+            line_text=self.clean_text(' '.join(words_in_line))
 
             if not line_text or len(line_text) < 5:
                 continue
@@ -172,24 +163,24 @@ class PDFProcessor:
             return False, f"{pdf_path.name}: {str(e)}"
 
     def process_pdfs(self):
-        input_dir = Path("/app/input")
-        output_dir = Path("/app/output")
+        input_dir=Path("/app/input")
+        output_dir=Path("/app/output")
         output_dir.mkdir(exist_ok=True, parents=True)
 
-        pdf_files = list(input_dir.glob("*.pdf"))
-        total_files = len(pdf_files)
-        processed_count = 0
-        errors = []
+        pdf_files=list(input_dir.glob("*.pdf"))
+        total_files=len(pdf_files)
+        processed_count=0
+        errors=[]
 
         print(f"Found {total_files} PDF files to process")
 
         with ThreadPoolExecutor() as executor:
-            futures = [executor.submit(self.process_pdf, pdf_file, output_dir) for pdf_file in pdf_files]
+            futures=[executor.submit(self.process_pdf, pdf_file, output_dir) for pdf_file in pdf_files]
 
             for future in as_completed(futures):
-                success, message = future.result()
+                success, message=future.result()
                 if success:
-                    processed_count += 1
+                    processed_count+=1
                     print(f"Processed: {message}")
                 else:
                     errors.append(message)
@@ -203,5 +194,5 @@ class PDFProcessor:
 
 
 if __name__ == "__main__":
-    processor = PDFProcessor()
+    processor=PDFProcessor()
     processor.process_pdfs()
