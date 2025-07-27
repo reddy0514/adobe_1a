@@ -1,0 +1,40 @@
+{
+  "title": "Understanding AI",
+  "outline": [
+    {
+      "level": "H2",
+      "text": "Introduction",
+      "page": 1
+    },
+    {
+      "level": "H3",
+      "text": "What is AI?",
+      "page": 1
+    },
+    {
+      "level": "H4",
+      "text": "History of AI",
+      "page": 1
+    },
+    {
+      "level": "H2",
+      "text": "Applications",
+      "page": 2
+    },
+    {
+      "level": "H3",
+      "text": "In Healthcare",
+      "page": 2
+    },
+    {
+      "level": "H3",
+      "text": "In Education",
+      "page": 2
+    },
+    {
+      "level": "H2",
+      "text": "Challenges",
+      "page": 3
+    }
+  ]
+}
