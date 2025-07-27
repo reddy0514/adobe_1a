@@ -1,5 +1,5 @@
 🧭 Introduction
-This report explains the design, purpose, and operation of a Python-based tool for extracting meaningful information—like titles and outlines—from PDF documents. The tool is intended for batch processing of many PDFs at once, making it useful for tasks such as digital archiving, document indexing, or generating structured metadata for large collections of files.
+This report explains the design, purpose, and operation of a Python-based tool for extracting meaningful information—like titles and outlines—from PDF 	documents. The tool is intended for batch processing of many PDFs at once, making it useful for tasks such as digital archiving, document indexing, or generating structured metadata for large collections of files.
 
 The system is designed with performance, reliability, and readability in mind. It uses multithreading to scale across multiple PDFs, applies intelligent heuristics to extract titles and outlines, and stores the results in clean JSON files for downstream use.
 
